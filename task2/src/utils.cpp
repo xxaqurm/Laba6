@@ -47,7 +47,7 @@ vector<uint8_t> readFile(const string& filename) {
     
     // Читаем весь файл в вектор
     return vector<uint8_t>(
-        istreambuf_iterator<char>(file),
+        istreambuf_iterator<char>(file),  // итератор, который начинает чтение с первого символа потока file
         istreambuf_iterator<char>()
     );
 }

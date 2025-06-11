@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <stdexcept>
 
+using namespace std;
+
 // S-box
 const uint8_t AES::sBox[256] = {
     0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
@@ -42,8 +44,7 @@ const uint8_t AES::invSBox[256] = {
     0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
 
-// Round constant for key expansion
-const uint8_t AES::rcon[11] = {
+const uint8_t AES::rcon[11] = {  // константы для расширения ключей
     0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36
 };
 
@@ -51,37 +52,34 @@ AES::AES(const std::vector<uint8_t>& key) : key(key) {
     if (key.size() != 16) {
         throw std::runtime_error("Key must be 16 bytes for AES-128");
     }
-    roundKey.resize(176); // 11 round keys * 16 bytes
+    roundKey.resize(176); // 11 раундов
     keyExpansion();
 }
 
 void AES::keyExpansion() {
-    // The first round key is the key itself
-    for (int i = 0; i < 16; ++i) {
+    for (int i = 0; i < 16; i++) {  // первый раундовый ключ
         roundKey[i] = key[i];
     }
-    
-    // All other round keys are found from the previous round keys
-    for (int i = 16; i < 176; i += 4) {
+
+    for (int i = 16; i < 176; i += 4) {  // остальные раундовые ключи, основанные на предыдущих
         uint8_t temp[4];
-        for (int j = 0; j < 4; ++j) {
-            temp[j] = roundKey[i - 4 + j];
+        for (int j = 0; j < 4; j++) {
+            temp[j] = roundKey[i - 4 + j];  // предыдущее слово
         }
         
         if (i % 16 == 0) {
-            // Rotate word
+            // сдвигаем влево на 1
             uint8_t t = temp[0];
             temp[0] = temp[1];
             temp[1] = temp[2];
             temp[2] = temp[3];
             temp[3] = t;
             
-            // Sub word
+            // заменяем по SBox таблице
             for (int j = 0; j < 4; ++j) {
                 temp[j] = sBox[temp[j]];
             }
             
-            // XOR with rcon
             temp[0] ^= rcon[i/16];
         }
         
@@ -103,23 +101,17 @@ void AES::subBytes() {
     }
 }
 
-void AES::invSubBytes() {
-    for (int i = 0; i < 16; ++i) {
-        state[i] = invSBox[state[i]];
-    }
-}
-
 void AES::shiftRows() {
     uint8_t temp;
     
-    // Row 1: rotate left by 1
+    // сдвигаем влево на 1
     temp = state[1];
     state[1] = state[5];
     state[5] = state[9];
     state[9] = state[13];
     state[13] = temp;
     
-    // Row 2: rotate left by 2
+    // сдвигаем влево на 2
     temp = state[2];
     state[2] = state[10];
     state[10] = temp;
@@ -127,7 +119,7 @@ void AES::shiftRows() {
     state[6] = state[14];
     state[14] = temp;
     
-    // Row 3: rotate left by 3 (or right by 1)
+    // сдвигаем влево на 3
     temp = state[15];
     state[15] = state[11];
     state[11] = state[7];
@@ -135,33 +127,6 @@ void AES::shiftRows() {
     state[3] = temp;
 }
 
-void AES::invShiftRows() {
-    uint8_t temp;
-    
-    // Row 1: rotate right by 1
-    temp = state[13];
-    state[13] = state[9];
-    state[9] = state[5];
-    state[5] = state[1];
-    state[1] = temp;
-    
-    // Row 2: rotate right by 2
-    temp = state[2];
-    state[2] = state[10];
-    state[10] = temp;
-    temp = state[6];
-    state[6] = state[14];
-    state[14] = temp;
-    
-    // Row 3: rotate right by 3 (or left by 1)
-    temp = state[3];
-    state[3] = state[7];
-    state[7] = state[11];
-    state[11] = state[15];
-    state[15] = temp;
-}
-
-// Helper function for mixColumns
 uint8_t gmul(uint8_t a, uint8_t b) {
     uint8_t p = 0;
     for (int i = 0; i < 8; ++i) {
@@ -189,21 +154,6 @@ void AES::mixColumns() {
     }
 }
 
-void AES::invMixColumns() {
-    uint8_t temp[16];
-    
-    for (int i = 0; i < 4; ++i) {
-        temp[4*i+0] = gmul(0x0e, state[4*i+0]) ^ gmul(0x0b, state[4*i+1]) ^ gmul(0x0d, state[4*i+2]) ^ gmul(0x09, state[4*i+3]);
-        temp[4*i+1] = gmul(0x09, state[4*i+0]) ^ gmul(0x0e, state[4*i+1]) ^ gmul(0x0b, state[4*i+2]) ^ gmul(0x0d, state[4*i+3]);
-        temp[4*i+2] = gmul(0x0d, state[4*i+0]) ^ gmul(0x09, state[4*i+1]) ^ gmul(0x0e, state[4*i+2]) ^ gmul(0x0b, state[4*i+3]);
-        temp[4*i+3] = gmul(0x0b, state[4*i+0]) ^ gmul(0x0d, state[4*i+1]) ^ gmul(0x09, state[4*i+2]) ^ gmul(0x0e, state[4*i+3]);
-    }
-    
-    for (int i = 0; i < 16; ++i) {
-        state[i] = temp[i];
-    }
-}
-
 std::vector<uint8_t> AES::encrypt(const std::vector<uint8_t>& plaintext) {
     if (plaintext.size() != 16) {
         throw std::runtime_error("Plaintext must be 16 bytes for AES");
@@ -211,10 +161,8 @@ std::vector<uint8_t> AES::encrypt(const std::vector<uint8_t>& plaintext) {
     
     state = plaintext;
     
-    // Initial round
     addRoundKey(0);
     
-    // 9 main rounds
     for (int round = 1; round < 10; ++round) {
         subBytes();
         shiftRows();
@@ -222,36 +170,9 @@ std::vector<uint8_t> AES::encrypt(const std::vector<uint8_t>& plaintext) {
         addRoundKey(round);
     }
     
-    // Final round (no mixColumns)
     subBytes();
     shiftRows();
     addRoundKey(10);
-    
-    return state;
-}
-
-std::vector<uint8_t> AES::decrypt(const std::vector<uint8_t>& ciphertext) {
-    if (ciphertext.size() != 16) {
-        throw std::runtime_error("Ciphertext must be 16 bytes for AES");
-    }
-    
-    state = ciphertext;
-    
-    // Initial round
-    addRoundKey(10);
-    
-    // 9 main rounds
-    for (int round = 9; round > 0; --round) {
-        invShiftRows();
-        invSubBytes();
-        addRoundKey(round);
-        invMixColumns();
-    }
-    
-    // Final round (no invMixColumns)
-    invShiftRows();
-    invSubBytes();
-    addRoundKey(0);
     
     return state;
 }
