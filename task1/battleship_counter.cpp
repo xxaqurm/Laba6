@@ -11,7 +11,7 @@ using namespace std;
 void battleship_counter() {
     int m = 4, n = 4;
     vector<vector<char>> field = {
-        {'.', '.', 'X', '.'},
+        {'.', '.', 'X', 'X'},
         {'X', 'X', '.', 'X'},
         {'.', '.', '.', 'X'},
         {'.', 'X', '.', 'X'}
@@ -24,6 +24,10 @@ void battleship_counter() {
                 bool isStart = true;
                 if (i > 0 && field[i-1][j] == 'X') isStart = false;
                 if (j > 0 && field[i][j-1] == 'X') isStart = false;
+                if ((i > 0 && field[i-1][j] == 'X') && (j > 0 && field[i][j-1])) {
+                    cout << "ERROR" << endl;
+                    return;
+                }
                 
                 if (isStart) {
                     cntShips++;

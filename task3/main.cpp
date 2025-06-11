@@ -1,17 +1,69 @@
-/* Вариант 6           e = 10^(-3)*/
+/* Вариант 6 */
 #include <iostream>
 #include <vector>
 #include <iomanip>
 
 using namespace std;
 
+const double EPS = 0.001;
+
+bool isConvergent(const vector<vector<double>> A) {
+    /* Проверка сходимости */
+    int n = A.size();
+    for (int i = 0; i < n; ++i) {
+        double sum = 0;
+        for (int j = 0; j < n; ++j) {
+            if (i != j) sum += abs(A[i][j]);
+        }
+        if (abs(A[i][i]) <= sum) return false;
+    }
+    return true;
+}
+
+vector<double> method_simple_iters(vector<vector<double>> A, vector<double> b) {
+    /* Метод простых итераций */
+    int n = A.size();
+    vector<double> x(n, 0.0);
+    vector<double> x_new(n);
+    
+    int iters = 0;
+    double err = 0;
+
+    if (!isConvergent(A)) {
+        cout << "Не выполнено условие сходимости" << endl;
+        return {};
+    }
+    
+    do {
+        err = 0;
+        for (int i = 0; i < n; i++) {
+            x_new[i] = b[i];
+            for (int j = 0; j < n; j++) {
+                if (i != j) {
+                    x_new[i] -= A[i][j] * x[j];
+                }
+            }
+            x_new[i] /= A[i][i];
+            err = max(err, abs(x_new[i] - x[i]));
+            
+            for (int i = 0; i < 10; i++) {
+                cout << "Итерация " << i + 1 << ": " << x_new[i] << endl;
+            }
+        }
+        x = x_new;
+        iters++;
+    } while (err > EPS && iters < 1000);
+
+    return x;
+}
+
 vector<double> method_gauss(vector<vector<double>> A, vector<double> b) {
-    double eps = 0.001;
+    /* Решение СЛАУ с помощью Гаусса */
     int n = A.size();
 
     for (int i = 0; i < n; i++) {
         int maxRow = i;
-        for (int k = i + 1; k < n; k++) {  // ищем максимальный элемент в колонке i
+        for (int k = i + 1; k < n; k++) {
             if (abs(A[k][i]) > abs(A[maxRow][i])) {
                 maxRow = k;
             }
@@ -20,13 +72,12 @@ vector<double> method_gauss(vector<vector<double>> A, vector<double> b) {
         swap(A[i], A[maxRow]);
         swap(b[i], b[maxRow]);
 
-        // Проверка на нулевой элемент
-        if (abs(A[i][i]) < eps) {
+        if (abs(A[i][i]) < EPS) {  // нулевой элемент
             cerr << "Нет уникального решения (нулевой элемент на диагонали)." << endl;
             return {};
         }
 
-        for (int j = i + 1; j < n; j++) {  // приводим к верхнетреугольной матрице
+        for (int j = i + 1; j < n; j++) {  // верхнетреугольная матрица
             double factor = A[j][i] / A[i][i];
             for (int k = i; k < n; k++)
                 A[j][k] -= factor * A[i][k];
@@ -56,7 +107,19 @@ int main() {
 
     vector<double> result = method_gauss(A, b);
 
-    cout << "Решение:" << endl;
+    cout << "Решение по Гауссу:" << endl;
+    for (size_t i = 0; i < result.size(); i++)
+        cout << "x" << i + 1 << " = " << fixed << setprecision(4) << result[i] << endl;
+    cout << endl;
+
+    result.clear();
+    result = method_simple_iters(A, b);
+    
+    if (result.empty()) {
+        cout << "По методу простых итераций решений не найдено" << endl;
+        return 0;
+    }
+    cout << "\nРешение методом простых итераций:" << endl;
     for (size_t i = 0; i < result.size(); i++)
         cout << "x" << i + 1 << " = " << fixed << setprecision(4) << result[i] << endl;
 

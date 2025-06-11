@@ -19,11 +19,11 @@ string bytesToString(const vector<uint8_t>& bytes) {
 }
 
 vector<uint8_t> generateRandomIV() {
-    vector<uint8_t> iv(16);
     random_device rd;
     mt19937 gen(rd());
     uniform_int_distribution<> dis(0, 255);
     
+    vector<uint8_t> iv(16);
     for (auto& byte : iv) {
         byte = static_cast<uint8_t>(dis(gen));
     }

@@ -2,3 +2,5 @@
 Ключ: ./aes_ofb -g /home/xxaqurm/files/key.txt
 Шифрование: ./aes_ofb -e /home/xxaqurm/files/voyna_i_mir_tom_1.txt /home/xxaqurm/files/encrypted_file.txt /home/xxaqurm/files/iv.txt /home/xxaqurm/files/key.txt
 Дешифрование: ./aes_ofb -d /home/xxaqurm/files/encrypted_file.txt /home/xxaqurm/files/decrypted_file.txt /home/xxaqurm/files/iv.txt /home/xxaqurm/files/key.txt
+
+hexdump -c file

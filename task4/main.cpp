@@ -30,7 +30,7 @@ int main() {
     
     ll maxWidth = 0;
     ll left = 1;
-    ll right = min(n, m) / 2;  // макс ширина дорожки не может быть больше половины меньшей стороны
+    ll right = min(n, m) / 2;
 
     while (left <= right) {  // Бин поиск для определения максимально возможной ширины пути
         ll mid = left + (right - left) / 2;

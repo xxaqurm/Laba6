@@ -19,7 +19,7 @@ vector<uint8_t> OFB::encrypt(const vector<uint8_t>& plaintext) {
         
         size_t blockSize = min<size_t>(16, plaintext.size() - i);
         
-        for (size_t j = 0; j < blockSize; ++j) {
+        for (size_t j = 0; j < blockSize; j++) {
             ciphertext.push_back(plaintext[i + j] ^ feedback[j]);
         }
     }
