@@ -21,37 +21,52 @@ bool isConvergent(const vector<vector<double>> A) {
 }
 
 vector<double> method_simple_iters(vector<vector<double>> A, vector<double> b) {
-    /* Метод простых итераций */
     int n = A.size();
-    vector<double> x(n, 0.0);
-    vector<double> x_new(n);
-    
-    int iters = 0;
-    double err = 0;
+    vector<vector<double>> B(n, vector<double>(n));
+    vector<double> c(n);
+
+    for (int i = 0; i < n; ++i) {  // Приведение к каноническому виду
+        if (abs(A[i][i]) < EPS) {
+            cout << "Нулевой диагональный элемент, метод невозможен." << endl;
+            return {};
+        }
+        for (int j = 0; j < n; ++j) {
+            if (i != j)
+                B[i][j] = -A[i][j] / A[i][i];
+            else
+                B[i][j] = 0.0;
+        }
+        c[i] = b[i] / A[i][i];
+    }
 
     if (!isConvergent(A)) {
-        cout << "Не выполнено условие сходимости" << endl;
+        cout << "Не выполнено условие сходимости (не диагональное преобладание)" << endl;
         return {};
     }
-    
+
+    vector<double> x(n, 0.0);
+    vector<double> x_new(n);
+    double err;
+    int iters = 0;
+
     do {
         err = 0;
-        for (int i = 0; i < n; i++) {
-            x_new[i] = b[i];
-            for (int j = 0; j < n; j++) {
-                if (i != j) {
-                    x_new[i] -= A[i][j] * x[j];
-                }
+        for (int i = 0; i < n; ++i) {
+            x_new[i] = c[i];
+            for (int j = 0; j < n; ++j) {
+                x_new[i] += B[i][j] * x[j];
             }
-            x_new[i] /= A[i][i];
             err = max(err, abs(x_new[i] - x[i]));
-            
-            for (int i = 0; i < 10; i++) {
-                cout << "Итерация " << i + 1 << ": " << x_new[i] << endl;
-            }
         }
+
         x = x_new;
-        iters++;
+        ++iters;
+
+        cout << "Итерация " << iters << ": ";
+        for (double val : x)
+            cout << fixed << setprecision(4) << val << " ";
+        cout << endl;
+
     } while (err > EPS && iters < 1000);
 
     return x;
