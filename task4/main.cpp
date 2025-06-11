@@ -8,7 +8,7 @@ using namespace std;
 typedef long long ll;
 
 ll calculateTiles(ll n, ll m, ll k) {
-    /* Рассчитывает плитки, необходимые для контура шириной k */
+    /* Находит количество плиток, которое нужно для дорожки ширины k */
     return n * m - (n - 2 * k) * (m - 2 * k);
 }
 
@@ -30,7 +30,7 @@ int main() {
     
     ll maxWidth = 0;
     ll left = 1;
-    ll right = min(n, m) / 2;
+    ll right = min(n, m) / 2;  // макс ширина дорожки не может быть больше половины меньшей стороны
 
     while (left <= right) {  // Бин поиск для определения максимально возможной ширины пути
         ll mid = left + (right - left) / 2;
