@@ -17,6 +17,14 @@ void battleship_counter() {
         {'.', 'X', '.', 'X'}
     };
 
+    cout << "Игровое поле:" << endl;
+    for (auto& row : field) {
+        for (auto& clmn : row) {
+            cout << clmn << " ";
+        }
+        cout << endl;
+    }
+
     int cntShips = 0;
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
@@ -24,7 +32,7 @@ void battleship_counter() {
                 bool isStart = true;
                 if (i > 0 && field[i-1][j] == 'X') isStart = false;
                 if (j > 0 && field[i][j-1] == 'X') isStart = false;
-                if ((i > 0 && field[i-1][j] == 'X') && (j > 0 && field[i][j-1])) {
+                if ((i > 0 && field[i-1][j] == 'X') && (j > 0 && field[i][j-1] == 'X')) {
                     cout << "ERROR" << endl;
                     return;
                 }
